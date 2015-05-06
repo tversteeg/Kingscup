@@ -1,34 +1,48 @@
 ﻿Page = require 'page'
+Form = require 'form'
 Plugin = require 'plugin'
 Ui = require 'ui'
 Dom = require 'dom'
 Obs = require 'obs'
 Db = require 'db'
+Server = require 'server'
 
 # This is the main entry point for a plugin:
 exports.render = ->
 	#if Plugin.users.count().get() < 2
 	#	Ui.emptyText "You need at least 2 members in your happening group to play Kingscup"
 	#	return
+	userId = Plugin.userId()
+	players = Db.shared.peek('players')
 
-	value = Obs.create(0)
+	Ui.button "Increment", !->
+		Server.call "addUser", userId
 
-	Dom.section !->
-		Dom.style Box: 'middle'
+exports.getTitle = !->
+	"Kingscup!"
 
-		Dom.div !->
-			Dom.style Flex: true
-			Dom.h2 "Select players:"
+exports.renderSettings = !->
+	if Db.shared
+		Dom.text "Game has started"
+	else
+		value = Obs.create(0)
 
-			Plugin.users.iterate (user) !->
-				Ui.item !->
-					Ui.avatar user.get('avatar')
-					Dom.text user.get('name')
+		Dom.section !->
+			Dom.style Box: 'middle'
 
-					if +user.key() is +value.get()
-						Dom.div !->
-							Dom.style	color: Plugin.colors().highlight
-							Dom.text "✓"
+			Dom.div !->
+				Dom.style Flex: true
+				Dom.h2 "Select players:"
 
-					Dom.onTap !->
-						value.set user.key()
+				Plugin.users.iterate (user) !->
+					Ui.item !->
+						Ui.avatar user.get('avatar')
+						Dom.text user.get('name')
+
+						if +user.key() is +value.get()
+							Dom.div !->
+								Dom.style	color: Plugin.colors().highlight
+								Dom.text "✓"
+
+						Dom.onTap !->
+							value.set user.key()
