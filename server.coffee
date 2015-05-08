@@ -3,6 +3,7 @@ Plugin = require 'plugin'
 Event = require 'event'
 
 exports.onInstall = (config) ->
+	log config
 	if config
 		# set the counter to 0 on plugin installation
 		Db.shared.set 'players', +config

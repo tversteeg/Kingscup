@@ -18,6 +18,14 @@ exports.render = ->
 	Ui.button "Increment", !->
 		Server.call "addUser", userId
 
+	Dom.div !->
+		Dom.style
+			display: 'inline-block'
+			width: '80%'
+			height: '80%'
+			background: "url(#{Plugin.resourceUri('2_of_clubs.png')}) 100% 100% no-repeat"
+			backgroundSize: 'contain'
+
 exports.getTitle = !->
 	"Kingscup!"
 
