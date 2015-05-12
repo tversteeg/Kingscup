@@ -3,10 +3,10 @@ Plugin = require 'plugin'
 Event = require 'event'
 
 exports.onInstall = (config) ->
-	log config
-	if config
+	if config?
 		# set the counter to 0 on plugin installation
-		Db.shared.set 'players', +config
+		Db.shared.set 'settings', 'players', config.players
+		Db.shared.set 'settings', 'playercount', config.playercount
 
 		Event.create
 			unit: 'game'

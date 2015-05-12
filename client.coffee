@@ -26,6 +26,12 @@ exports.render = ->
 			background: "url(#{Plugin.resourceUri('2_of_clubs.png')}) 100% 100% no-repeat"
 			backgroundSize: 'contain'
 
+	playercount = Obs.create(if Db.shared then Db.shared.get 'settings', 'playercount' else 0)
+
+	if Db.shared.get 'settings'
+		Dom.text "Players:"
+		Dom.text playercount.get()
+
 exports.getTitle = !->
 	"Kingscup!"
 
@@ -33,7 +39,8 @@ exports.renderSettings = !->
 	if Db.shared
 		Dom.text "Game has started"
 	else
-		value = Obs.create(0)
+		playercount = Obs.create(0)
+		players = Obs.create()
 
 		Dom.section !->
 			Dom.style Box: 'middle'
@@ -47,10 +54,17 @@ exports.renderSettings = !->
 						Ui.avatar user.get('avatar')
 						Dom.text user.get('name')
 
-						if +user.key() is +value.get()
-							Dom.div !->
-								Dom.style	color: Plugin.colors().highlight
-								Dom.text "✓"
+#						if +user.key() is +players.get()
+#							Dom.div !->
+#								Dom.style	color: Plugin.colors().highlight
+#								Dom.text "✓"
 
 						Dom.onTap !->
-							value.set user.key()
+							players.set(playercount.get(), user.key())
+							playercount.modify (v) -> v+1
+
+		Obs.observe !->
+			pl = Form.hidden 'players'
+			ct = Form.hidden 'playercount'
+			pl.value JSON.stringify(players.get())
+			ct.value playercount.get()
