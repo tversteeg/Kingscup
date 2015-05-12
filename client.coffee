@@ -9,28 +9,34 @@ Server = require 'server'
 
 # This is the main entry point for a plugin:
 exports.render = ->
-	#if Plugin.users.count().get() < 2
-	#	Ui.emptyText "You need at least 2 members in your happening group to play Kingscup"
-	#	return
-	userId = Plugin.userId()
-	players = Db.shared.peek('players')
+	if Plugin.users.count().get() < 2
+		Ui.emptyText "You need at least 2 members in your happening group to play Kingscup"
+		return
 
-	Ui.button "Increment", !->
-		Server.call "addUser", userId
+	if ! Db.shared.get 'settings', 'playercount'
+		Ui.emptyText "You need players to play Kingscup"
+		return
+
+	userId = Plugin.userId()
+
+#		Server.call "addUser", userId
+	playercount = Obs.create(Db.shared.get 'settings', 'playercount')
+	players = JSON.parse(Db.shared.get 'settings', 'players')
+
+	Dom.div !->
+		Dom.text "Players: "
+		Dom.text playercount.get()
+		Dom.style
+			display: 'inline-block'
+			width: '100%'
 
 	Dom.div !->
 		Dom.style
 			display: 'inline-block'
 			width: '80%'
 			height: '80%'
-			background: "url(#{Plugin.resourceUri('2_of_clubs.png')}) 100% 100% no-repeat"
+			background: "url(#{Plugin.resourceUri('back.jpg')}) 100% 100% no-repeat"
 			backgroundSize: 'contain'
-
-	playercount = Obs.create(if Db.shared then Db.shared.get 'settings', 'playercount' else 0)
-
-	if Db.shared.get 'settings'
-		Dom.text "Players:"
-		Dom.text playercount.get()
 
 exports.getTitle = !->
 	"Kingscup!"
