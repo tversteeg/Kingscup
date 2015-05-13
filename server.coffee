@@ -19,6 +19,14 @@ exports.client_event = !->
 		text: "Your turn!"
 		new: [+Db.shared.get('turn')]
 
-exports.client_addUser = (user) ->
-	maxId = Db.shared.modify "ids", (v) -> v+1
-	Db.shared.set "users", maxId, {user: user}
+exports.getTitle = !->
+	"Kingscup!"
+
+exports.client_getCurrentUser = ->
+	#maxId = Db.shared.modify "ids", (v) -> v+1
+	#Db.shared.set "users", maxId, {user: user}
+
+	turn = Db.shared.get 'turn'
+	players = JSON.parse(Db.shared.get 'settings', 'players')
+
+	players[turn]

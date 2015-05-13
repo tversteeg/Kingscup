@@ -7,6 +7,9 @@ Obs = require 'obs'
 Db = require 'db'
 Server = require 'server'
 
+getUser = (num) !->
+	return JSON.parse(Db.shared.get 'settings', 'players')[num]
+
 # This is the main entry point for a plugin:
 exports.render = ->
 	if Plugin.users.count().get() < 2
@@ -22,6 +25,7 @@ exports.render = ->
 #		Server.call "addUser", userId
 	playercount = Obs.create(Db.shared.get 'settings', 'playercount')
 	players = JSON.parse(Db.shared.get 'settings', 'players')
+	current = getUser(Db.shared.get 'turn')
 
 	Dom.div !->
 		Dom.text "Players: "
@@ -38,8 +42,8 @@ exports.render = ->
 			background: "url(#{Plugin.resourceUri('back.jpg')}) 100% 100% no-repeat"
 			backgroundSize: 'contain'
 
-exports.getTitle = !->
-	"Kingscup!"
+	Dom.div !->
+		Dom.text "#{Plugin.userName(current)}'s turn!"
 
 exports.renderSettings = !->
 	if Db.shared
