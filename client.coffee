@@ -6,6 +6,7 @@ Dom = require 'dom'
 Obs = require 'obs'
 Db = require 'db'
 Server = require 'server'
+Modal = require 'modal'
 
 getUser = (num) !->
 	return JSON.parse(Db.shared.get 'settings', 'players')[num]
@@ -20,30 +21,44 @@ exports.render = ->
 		Ui.emptyText "You need players to play Kingscup"
 		return
 
-	userId = Plugin.userId()
-
 #		Server.call "addUser", userId
 	playercount = Obs.create(Db.shared.get 'settings', 'playercount')
 	players = JSON.parse(Db.shared.get 'settings', 'players')
 	current = getUser(Db.shared.get 'turn')
 
-	Dom.div !->
-		Dom.text "Players: "
-		Dom.text playercount.get()
-		Dom.style
-			display: 'inline-block'
-			width: '100%'
+	if current is Plugin.userId()
+		Dom.div !->
+			Dom.text "Your turn!"
+	else
+		Dom.div !->
+			Dom.text "Players: "
+			Dom.text playercount.get()
+			Dom.style
+				display: 'inline-block'
+				width: '100%'
 
-	Dom.div !->
-		Dom.style
-			display: 'inline-block'
-			width: '80%'
-			height: '80%'
-			background: "url(#{Plugin.resourceUri('back.jpg')}) 100% 100% no-repeat"
-			backgroundSize: 'contain'
+		Dom.div !->
+			Dom.style
+				display: 'inline-block'
+				width: '80%'
+				height: '80%'
+				background: "url(#{Plugin.resourceUri('back.jpg')}) 100% 100% no-repeat"
+				backgroundSize: 'contain'
 
-	Dom.div !->
-		Dom.text "#{Plugin.userName(current)}'s turn!"
+		Dom.div !->
+			Dom.text "#{Plugin.userName(current)}'s turn!"
+
+	Modal.show "Draw a card", !->
+		Dom.style width: '80%'
+		Dom.div !->
+			Dom.style
+				maxHeight: '40%'
+				overflow: 'auto'
+				backgroundColor: '#eee'
+				margin: '-12px'
+			Ui.bigButton "Draw a card", !->
+				Server.call 'nextTurn'
+				Modal.remove()
 
 exports.renderSettings = !->
 	if Db.shared

@@ -22,6 +22,14 @@ exports.client_event = !->
 exports.getTitle = !->
 	"Kingscup!"
 
+exports.client_nextTurn = ->
+	turn = Db.shared.get 'turn'
+	Db.shared.modify 'turn', (v) ->
+		if v < Db.shared.get 'playercount'
+			v+1
+		else
+			0
+
 exports.client_getCurrentUser = ->
 	#maxId = Db.shared.modify "ids", (v) -> v+1
 	#Db.shared.set "users", maxId, {user: user}
