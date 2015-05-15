@@ -22,7 +22,7 @@ exports.render = ->
 		return
 
 #		Server.call "addUser", userId
-	playercount = Obs.create(Db.shared.get 'settings', 'playercount')
+	playercount = Db.shared.get 'settings', 'playercount'
 	players = JSON.parse(Db.shared.get 'settings', 'players')
 	turn = Db.shared.get 'turn'
 	current = getUser(turn)
@@ -53,10 +53,11 @@ exports.render = ->
 					margin: '-12px'
 				Ui.bigButton "Draw a card", !->
 					next = +turn + 1
-					if next >= +playercount - 1
-						next = 0
+					if +next >= playercount
+						Server.call 'nextTurn', 0
+					else
+						Server.call 'nextTurn', next
 
-					Server.call 'nextTurn', next
 					Modal.remove()
 	else
 		if currentcard = Db.shared.get 'currentcard'
