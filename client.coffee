@@ -24,19 +24,24 @@ exports.render = ->
 #		Server.call "addUser", userId
 	playercount = Obs.create(Db.shared.get 'settings', 'playercount')
 	players = JSON.parse(Db.shared.get 'settings', 'players')
-	current = getUser(Db.shared.get 'turn')
+	turn = Db.shared.get 'turn'
+	current = getUser(turn)
 
 	if +Plugin.userId() is +current
 		Dom.div !->
-			Dom.text "Your turn!"
-
-		Dom.div !->
 			Dom.style
 				display: 'inline-block'
-				width: '80%'
-				height: '80%'
+				width: '90%'
+				height: '90%'
+				margin: '0 auto'
 				background: "url(#{Plugin.resourceUri('back.jpg')}) 100% 100% no-repeat"
 				backgroundSize: 'contain'
+
+		Dom.div !->
+			Dom.text "Your turn!"
+			Dom.style
+				fontSize: '200%'
+				textAlign: 'center'
 
 		Modal.show "Draw a card", !->
 			Dom.style width: '80%'
@@ -47,19 +52,38 @@ exports.render = ->
 					backgroundColor: '#eee'
 					margin: '-12px'
 				Ui.bigButton "Draw a card", !->
-					next = +(Db.shared.get 'turn') + 1
-					if next >= +playercount
+					next = +turn + 1
+					if next >= +playercount - 1
 						next = 0
 
 					Server.call 'nextTurn', next
 					Modal.remove()
 	else
 		if currentcard = Db.shared.get 'currentcard'
-			cardrules = ["Rule", "Snake eyes", "All girls drink", "All boys drink", "Forbidden word", "Give someone a drink", "\"Juffen\"", "Mate", "Category", "Rule", "Nickname", "Quiz master", "Kingscup!", "Rhyme"]
-			cardtype = +currentcard % 12
+			cardrules = [
+				"Rule",# 10
+				"Snake eyes",# 2
+				"All girls drink",# 3
+				"All boys drink",# 4
+				"Forbidden word",# 5
+				"Give someone a drink",# 6
+				"\"Juffen\"",# 7
+				"Mate",# 8
+				"Category",# 9
+				"Rhyme",# Ace
+				"Nickname",# Jack
+				"Kingscup!",# King
+				"Quiz master"# Queen
+			]
+			cardtype = Math.floor(+currentcard / 4)
 
 			cardtext = cardrules[cardtype]
 			cardimage = currentcard + '.png'
+
+			previous = +turn - 1
+			if previous < 0
+				previous = +playercount - 1
+			messagetext = Dom.text Plugin.userName(getUser(previous)) + " has drawn:"
 		else
 			cardtext = "The first card needs to be drawn"
 			cardimage = 'back.jpg'
@@ -72,6 +96,14 @@ exports.render = ->
 				background: "url(#{Plugin.resourceUri(cardimage)}) 100% 100% no-repeat"
 				backgroundSize: 'contain'
 
+		if messagetext
+			Dom.div !->
+				Dom.text messagetext
+				Dom.style
+					margin: '0 auto'
+					fontSize: '120%'
+					textAlign: 'center'
+
 		Dom.div !->
 			Dom.text cardtext
 			Dom.style
@@ -80,11 +112,10 @@ exports.render = ->
 				textAlign: 'center'
 
 		Dom.div !->
-			Ui.avatar Plugin.userAvatar(current)
-			Dom.text "#{Plugin.userName(current)}'s turn!"
+			Dom.text Plugin.userName(current) + "'s turn!"
 			Dom.style
 				margin: '0 auto'
-				fontSize: '120%'
+				fontSize: '150%'
 				textAlign: 'center'
 
 exports.renderSettings = !->
