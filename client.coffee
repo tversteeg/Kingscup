@@ -47,54 +47,45 @@ exports.render = ->
 					backgroundColor: '#eee'
 					margin: '-12px'
 				Ui.bigButton "Draw a card", !->
-					Server.call 'nextTurn'
+					next = +(Db.shared.get 'turn') + 1
+					if next >= +playercount
+						next = 0
+
+					Server.call 'nextTurn', next
 					Modal.remove()
 	else
-		Dom.div !->
-			Dom.text "Players: "
-			Dom.text playercount.get()
-			Dom.style
-				display: 'inline-block'
-				width: '100%'
+		if currentcard = Db.shared.get 'currentcard'
+			cardrules = ["Rule", "Snake eyes", "All girls drink", "All boys drink", "Forbidden word", "Give someone a drink", "\"Juffen\"", "Mate", "Category", "Rule", "Nickname", "Quiz master", "Kingscup!", "Rhyme"]
+			cardtype = +currentcard % 12
+
+			cardtext = cardrules[cardtype]
+			cardimage = currentcard + '.png'
+		else
+			cardtext = "The first card needs to be drawn"
+			cardimage = 'back.jpg'
 
 		Dom.div !->
-			if currentcard = Db.shared.get 'currentcard'
-				cardrules = ["Rule", "Snake eyes", "All girls drink", "All boys drink", "Forbidden word", "Give someone a drink", "\"Juffen\"", "Mate", "Category", "Rule", "Nickname", "Quiz master", "Kingscup!", "Rhyme"]
-				cardtype = +currentcard % 12
-
-				cardtext = cardrules[cardtype]
-				cardimage = currentcard + '.png'
-			else
-				cardtext = "The first card needs to be drawn"
-				cardimage = 'back.jpg'
-
-			Dom.div !->
-				Dom.text cardtext
-				Dom.style
-					position: 'absolute'
-					bottom: '0'
-					left: '0'
-					color: 'white'
-					fontSize: '200%'
-					width: '100%'
-					textAlign: 'center'
-					backgroundColor: 'rgba(0,0,0,0.5)'
-
 			Dom.style
-				position: 'relative'
-				display: 'inline-block'
-				width: '90%'
-				height: '90%'
+				width: '75%'
+				height: '75%'
 				margin: '0 auto'
 				background: "url(#{Plugin.resourceUri(cardimage)}) 100% 100% no-repeat"
 				backgroundSize: 'contain'
 
 		Dom.div !->
+			Dom.text cardtext
+			Dom.style
+				margin: '0 auto'
+				fontSize: '200%'
+				textAlign: 'center'
+
+		Dom.div !->
+			Ui.avatar Plugin.userAvatar(current)
 			Dom.text "#{Plugin.userName(current)}'s turn!"
 			Dom.style
-				position: 'relative'
-				width: '100%'
+				margin: '0 auto'
 				fontSize: '120%'
+				textAlign: 'center'
 
 exports.renderSettings = !->
 	if Db.shared

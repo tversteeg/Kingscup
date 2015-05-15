@@ -24,12 +24,8 @@ exports.onInstall = (config) ->
 exports.getTitle = !->
 	"Kingscup!"
 
-exports.client_nextTurn = ->
-	Db.shared.modify 'turn', (v) ->
-		if v < Db.shared.get 'settings', 'playercount' - 1
-			return v+1
-		else
-			return 0
+exports.client_nextTurn = (next) ->
+	Db.shared.set 'turn', next
 
 	found = -1
 	for cardnum in [1..52]
@@ -38,18 +34,8 @@ exports.client_nextTurn = ->
 			found = card
 			break
 
-	#Db.shared.set 'currentcard', Math.ceil(Math.random() * 52)
 	Db.shared.set 'currentcard', found
 
 	Event.create
 		text: "Your turn!"
-		new: [+Db.shared.get('turn')]
-
-exports.client_getCurrentUser = ->
-	#maxId = Db.shared.modify "ids", (v) -> v+1
-	#Db.shared.set "users", maxId, {user: user}
-
-	turn = Db.shared.get 'turn'
-	players = JSON.parse(Db.shared.get 'settings', 'players')
-
-	players[turn]
+		new: [+next]
