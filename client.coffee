@@ -26,16 +26,9 @@ exports.render = ->
 	players = JSON.parse(Db.shared.get 'settings', 'players')
 	current = getUser(Db.shared.get 'turn')
 
-	if current is Plugin.userId()
+	if +Plugin.userId() is +current
 		Dom.div !->
 			Dom.text "Your turn!"
-	else
-		Dom.div !->
-			Dom.text "Players: "
-			Dom.text playercount.get()
-			Dom.style
-				display: 'inline-block'
-				width: '100%'
 
 		Dom.div !->
 			Dom.style
@@ -45,20 +38,63 @@ exports.render = ->
 				background: "url(#{Plugin.resourceUri('back.jpg')}) 100% 100% no-repeat"
 				backgroundSize: 'contain'
 
+		Modal.show "Draw a card", !->
+			Dom.style width: '80%'
+			Dom.div !->
+				Dom.style
+					maxHeight: '40%'
+					overflow: 'auto'
+					backgroundColor: '#eee'
+					margin: '-12px'
+				Ui.bigButton "Draw a card", !->
+					Server.call 'nextTurn'
+					Modal.remove()
+	else
+		Dom.div !->
+			Dom.text "Players: "
+			Dom.text playercount.get()
+			Dom.style
+				display: 'inline-block'
+				width: '100%'
+
+		Dom.div !->
+			if currentcard = Db.shared.get 'currentcard'
+				cardrules = ["Rule", "Snake eyes", "All girls drink", "All boys drink", "Forbidden word", "Give someone a drink", "\"Juffen\"", "Mate", "Category", "Rule", "Nickname", "Quiz master", "Kingscup!", "Rhyme"]
+				cardtype = +currentcard % 12
+
+				cardtext = cardrules[cardtype]
+				cardimage = currentcard + '.png'
+			else
+				cardtext = "The first card needs to be drawn"
+				cardimage = 'back.jpg'
+
+			Dom.div !->
+				Dom.text cardtext
+				Dom.style
+					position: 'absolute'
+					bottom: '0'
+					left: '0'
+					color: 'white'
+					fontSize: '200%'
+					width: '100%'
+					textAlign: 'center'
+					backgroundColor: 'rgba(0,0,0,0.5)'
+
+			Dom.style
+				position: 'relative'
+				display: 'inline-block'
+				width: '90%'
+				height: '90%'
+				margin: '0 auto'
+				background: "url(#{Plugin.resourceUri(cardimage)}) 100% 100% no-repeat"
+				backgroundSize: 'contain'
+
 		Dom.div !->
 			Dom.text "#{Plugin.userName(current)}'s turn!"
-
-	Modal.show "Draw a card", !->
-		Dom.style width: '80%'
-		Dom.div !->
 			Dom.style
-				maxHeight: '40%'
-				overflow: 'auto'
-				backgroundColor: '#eee'
-				margin: '-12px'
-			Ui.bigButton "Draw a card", !->
-				Server.call 'nextTurn'
-				Modal.remove()
+				position: 'relative'
+				width: '100%'
+				fontSize: '120%'
 
 exports.renderSettings = !->
 	if Db.shared
@@ -77,7 +113,10 @@ exports.renderSettings = !->
 				Plugin.users.iterate (user) !->
 					Ui.item !->
 						Ui.avatar user.get('avatar')
-						Dom.text user.get('name')
+						if +user.key() is +Plugin.userId()
+							Dom.text "You"
+						else
+							Dom.text user.get('name')
 
 #						if +user.key() is +players.get()
 #							Dom.div !->
